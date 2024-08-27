@@ -13,8 +13,22 @@ const HomeScreen = () => {
     const statement = await (await db).prepareAsync('SELECT * FROM pets;');
     const result = await statement.executeAsync();
     const rows = await result.getAllAsync();
-    setPets(rows);
     await statement.finalizeAsync();
+
+    const statementVaccines = await (await db).prepareAsync('SELECT * FROM vaccines;');
+    const resultVaccinse = await statementVaccines.executeAsync();
+    const rowsVaccines = await resultVaccinse.getAllAsync();
+    await statementVaccines.finalizeAsync();
+
+    const petsWithVaccines = rows.map(pet => {
+      const petVaccines = rowsVaccines.filter(vaccine => vaccine.petId === pet.id);
+      return {
+        ...pet,
+        vaccines: petVaccines.length > 0 ? petVaccines.map(v => `${v.vaccineName}`).join(', ') : 'Não informado',
+      };
+    });
+  
+    setPets(petsWithVaccines);
   };
 
   useEffect(() => {
