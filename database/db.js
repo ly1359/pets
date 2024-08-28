@@ -3,7 +3,7 @@ import * as SQLite from 'expo-sqlite';
 
 const db = SQLite.openDatabaseAsync('pets.db');
 
-const getPetIdByName = async (name) => {
+export const getPetIdByName = async (name) => {
   const statement = await (await db).prepareAsync('SELECT id FROM pets WHERE name = ?;');
   const result = await statement.executeAsync([name]);
   const row = await result.getAllAsync();
@@ -78,7 +78,7 @@ export const setupDatabase = async () => {
 
     await insertVaccines.executeAsync([
       'Raiva', '2024-08-21', pokanId,
-      'Antirrábica', '2021-1-17', pokanId,
+      'Antirrábica', '2021-1-17', madaId,
       'Parvovirose','2024-08-21', madaId
     ]);
 

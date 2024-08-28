@@ -46,7 +46,6 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Pets Cadastrados</Text> */}
       <FlatList 
         data={pets}
         keyExtractor={(item) => item.id.toString()} 
@@ -89,7 +88,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 100,
     padding: 10,
-    backgroundColor: '#EAEDE3',
+    backgroundColor: '#d4dcc6',
   },
   title: {
     fontSize: 28,
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
   petContainer: {
     display: 'flex',
     flexDirection:'column',
-    backgroundColor: '#f4f6f1',
+    backgroundColor: '#dfe5d5',
     borderRadius: 15,
     padding: 15,
     margin: 7,
