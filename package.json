@@ -1,4 +1,12 @@
 {
+  "name": "pets",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
   "dependencies": {
     "expo-image-picker": "~15.0.7",
     "@expo/vector-icons": "^14.0.2",
