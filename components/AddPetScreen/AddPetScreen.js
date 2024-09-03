@@ -6,14 +6,14 @@ import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
 import { setupDatabase, getDatabase, getPetIdByName } from '../../database/db';
 import { useNavigation, useRoute } from '@react-navigation/native';
-
+import ErrorModal from './ErrorModal';
 
 const AddPetScreen = () => {
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [otherType, setOtherType] = useState('');
   const [bDate, setbDate] = useState(new Date());
-  const [vaccines, setVaccines] = useState([{ name: '', date: new Date() }]);;
+  const [vaccines, setVaccines] = useState([{ name: '', vaccineDate: new Date() }]);;
   const [showDatePickerIndex, setShowDatePickerIndex] = useState(null);
   const [image, setImage] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -22,7 +22,7 @@ const AddPetScreen = () => {
   const db = getDatabase();
 
   const addVaccineField = () => {
-    setVaccines([...vaccines, { name: '', date: new Date() }]);
+    setVaccines([...vaccines, { name: '', vaccineDate: new Date() }]);
   };
 
   const updateVaccine = (index, field, value) => {
@@ -94,17 +94,42 @@ const AddPetScreen = () => {
     }
   };
 
-  const savePet = async () => {
-    const petType = type === 'Outro' ? otherType : type;
-    try {
-      const insertPetStatement = await (await db).prepareAsync(
-        `INSERT INTO pets (name, type, otherType, bDate, image) 
-        VALUES (?, ?, ?, ?, ?);`
+  const [modalVisible, setModalVisible] = useState(false);
+  const petType = type === 'Outro' ? otherType : type;
 
-      );
-      await insertPetStatement.executeAsync([
-        name.toString(), petType.toString(), otherType.toString(), bDate.toISOString(), image.toString()
-      ]);
+  const validate = () => {
+    if (!name || !petType || !bDate) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const savePet = async () => {
+    if (!validate()) {
+      setModalVisible(true);
+      return;
+    }
+
+    try {
+      let insertPetStatement
+      const petStatementValues = [name.toString(), petType.toString(), otherType.toString(), bDate.toISOString()];
+
+      if (image === null) {
+        insertPetStatement = await (await db).prepareAsync(
+          `INSERT INTO pets (name, type, otherType, bDate) 
+          VALUES (?, ?, ?, ?);`
+        );
+      } else {
+        insertPetStatement = await (await db).prepareAsync(
+          `INSERT INTO pets (name, type, otherType, bDate, image) 
+          VALUES (?, ?, ?, ?, ?);`
+        );
+
+        petStatementValues.push(image.toString());
+      }
+
+      await insertPetStatement.executeAsync(petStatementValues);
       await insertPetStatement.finalizeAsync();
 
       const petId = await getPetIdByName(name.toString());
@@ -142,6 +167,7 @@ const AddPetScreen = () => {
   >
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+        <ErrorModal visible={modalVisible} setVisible={setModalVisible} />
         <Text style={styles.title}>Cadastre o animal</Text>
 
         {image && <Image source={{ uri: image }} style={styles.image} />}
