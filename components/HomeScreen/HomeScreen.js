@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, Button } fro
 import { formatDate } from '../../utils/formatDate';
 import { setupDatabase, getDatabase } from '../../database/db';
 import { useNavigation } from '@react-navigation/native';
+import PetImage from './PetImage';
 
 const HomeScreen = () => {
   const [pets, setPets] = useState([]);
@@ -54,17 +55,7 @@ const HomeScreen = () => {
             onPress={() => navigation.navigate('Details', { pet: item })} 
             style={styles.petContainer}
           >
-           {item.image ? (
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.image} 
-            />
-          ) : (
-            <Image 
-              source={'https://via.placeholder.com/100'} 
-              style={styles.image} 
-            />
-          )}
+            <PetImage item={item} />
           
             <View>
               <Text style={styles.name}>{item.name.toString()}</Text>
@@ -112,12 +103,6 @@ const styles = StyleSheet.create({
     elevation: 3,
     width: '47%',
     height: 350,
-  },
-  image: {
-    width: '100%',
-    height: 150,
-    borderRadius: 15,
-    marginBottom: 15,
   },
   name: {
     fontSize: 20,
