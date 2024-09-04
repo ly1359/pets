@@ -4,22 +4,43 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
-import { setupDatabase, getDatabase, getPetIdByName } from '../../database/db';
+import db, { setupDatabase, getDatabase, getPetIdByName } from '../../database/db';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ErrorModal from './ErrorModal';
 
+const fetchVaccines = async (pet) => {
+  const statementVaccines = await (await db).prepareAsync(`SELECT * FROM vaccines WHERE petId = ?;`);
+  const resultVaccines = await statementVaccines.executeAsync([pet.id]);
+  const rowsVaccines = await resultVaccines.getAllAsync();
+  await statementVaccines.finalizeAsync();
+  return rowsVaccines;
+};
+
 const AddPetScreen = () => {
-  const [name, setName] = useState('');
-  const [type, setType] = useState('');
-  const [otherType, setOtherType] = useState('');
-  const [bDate, setbDate] = useState(new Date());
+  const route = useRoute();
+  const { pet } = route.params;
+  const [name, setName] = useState(pet ? pet.name : '');
+  const [type, setType] = useState(pet ? pet.type === 'Outro' ? pet.otherType : pet.type : '');
+  const [otherType, setOtherType] = useState(pet ? pet.otherType : '');
+  const [bDate, setbDate] = useState(pet ? new Date(pet.bDate) : new Date());
   const [vaccines, setVaccines] = useState([{ vaccineName: '', vaccineDate: new Date() }]);;
   const [showDatePickerIndex, setShowDatePickerIndex] = useState(null);
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(pet ? pet.image : null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation();
-  const route = useRoute();
   const db = getDatabase();
+
+  useEffect(() => {
+    if (!pet) {
+      return;
+    }
+
+    (async () => {
+      let vaccines = await fetchVaccines(pet);
+      vaccines = vaccines.map((vaccine) => ({ ...vaccine, vaccineDate: new Date(vaccine.vaccineDate) }));
+      setVaccines(vaccines);
+    })()
+  }, []);
 
   const addVaccineField = () => {
     setVaccines([...vaccines, { name: '', vaccineDate: new Date() }]);
@@ -103,6 +124,50 @@ const AddPetScreen = () => {
     }
 
     return true;
+  };
+
+  const updatePet = async () => {
+    try {
+      let updatePetStatement
+      const petStatementValues = [name.toString(), petType.toString(), otherType.toString(), bDate.toISOString()];
+
+      if (image === null) {
+        updatePetStatement = await (await db).prepareAsync(
+          `UPDATE pets SET name = ?, type = ?, otherType = ?, bDate = ? WHERE id = ?;`
+        );
+      } else {
+        updatePetStatement = await (await db).prepareAsync(
+          `UPDATE pets SET name = ?, type = ?, otherType = ?, bDate = ?, image = ? WHERE id = ?;`
+        );
+
+        petStatementValues.push(image.toString());
+      }
+
+      petStatementValues.push(pet.id);
+      await updatePetStatement.executeAsync(petStatementValues);
+      await updatePetStatement.finalizeAsync();
+
+      if (pet.id && vaccines.length > 0) {
+        for (const vaccine of vaccines){
+          const insertVaccinesStatement = await (await db).prepareAsync(
+            `UPDATE vaccines SET vaccineName = ?, vaccineDate = ? WHERE petId = ?;`
+          );
+          await insertVaccinesStatement.executeAsync([
+            vaccine.vaccineName , vaccine.vaccineDate.toISOString(), pet.id
+          ]);
+          await insertVaccinesStatement.finalizeAsync();
+        }
+      }
+
+      if (route.params?.onSave) {
+        route.params.onSave();
+        navigation.goBack();
+      } else {
+        console.log('Error v saving pet:', result);
+      }
+    } catch (error) {
+        console.error('Error updating pet', error);
+    }
   };
 
   const savePet = async () => {
@@ -253,7 +318,7 @@ const AddPetScreen = () => {
     </ScrollView>
 
     <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.buttonSalvar} onPress={savePet}>
+      <TouchableOpacity style={styles.buttonSalvar} onPress={pet ? updatePet : savePet}>
         <Text style={styles.buttonText}>Salvar</Text>
       </TouchableOpacity>
     </View>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { formatDate } from '../../utils/formatDate';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -7,12 +7,38 @@ import db from '../../database/db';
 
 const DetailsScreen = () => {
   const route = useRoute();
-  const { pet } = route.params;
+  const [pet, setPet] = useState(route.params.pet);
   const navigation = useNavigation();
 
   const removePet = async (pet) => {
     const statement = await (await db).prepareAsync(`DELETE FROM pets WHERE id = ?;`);
     await statement.executeAsync([pet.id]);
+  };
+
+  const onSave = async () => {
+    const statement = await (await db).prepareAsync(
+      `SELECT * FROM pets WHERE id = ?;`
+    );
+    const result = await statement.executeAsync([pet.id]);
+    const rows = await result.getAllAsync();
+    await statement.finalizeAsync();
+
+    const statementVaccines = await (await db).prepareAsync(
+      `SELECT * FROM vaccines WHERE petId = ?;`
+    );
+    const resultVaccinse = await statementVaccines.executeAsync([pet.id]);
+    const rowsVaccines = await resultVaccinse.getAllAsync();
+    await statementVaccines.finalizeAsync();
+
+    const petsWithVaccines = rows.map(pet => {
+      const petVaccines = rowsVaccines.filter(vaccine => vaccine.petId === pet.id);
+      return {
+        ...pet,
+        vaccines: petVaccines.length > 0 ? petVaccines.map(v => `${v.vaccineName}`).join(', ') : 'Não informado',
+      };
+    });
+
+    setPet(petsWithVaccines[0]);
   };
 
   return (
@@ -31,11 +57,19 @@ const DetailsScreen = () => {
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
+            onPress={() => navigation.navigate('Add', { pet, onSave })}
+            style={[styles.button, styles.editButton]}
+          >
+            <Text style={{color: 'black', textAlign: 'center'}}>Editar</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
             onPress={async () => {
               await removePet(pet);
               navigation.goBack();
             }}
-            style={styles.removeButton}
+            style={[styles.button, styles.removeButton]}
           >
             <Text style={{color: 'white', textAlign: 'center'}}>Remover</Text>
           </TouchableOpacity>
@@ -61,12 +95,17 @@ const styles = StyleSheet.create({
   buttonContainer: {
     padding: 20,
   },
-  removeButton: {
+  button: {
     flex: 0,
-    backgroundColor: '#AF0000',
     padding: 15,
     textAlign: 'center',
     borderRadius: 25,
+  },
+  editButton: {
+    backgroundColor: '#D0DEB8',
+  },
+  removeButton: {
+    backgroundColor: '#AF0000',
   },
   title: {
     fontSize: 28,
