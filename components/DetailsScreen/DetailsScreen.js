@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { formatDate } from '../../utils/formatDate';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import PetImage from '../HomeScreen/PetImage';
@@ -46,7 +46,7 @@ const DetailsScreen = () => {
       <View style={styles.imageContainer}>
         <PetImage item={pet} size={200} />
       </View>
-      <View style={styles.containerText}>
+      <ScrollView style={styles.containerText}>
         <Text style={styles.textName}>{pet.name}</Text>
         <Text style={styles.label}>Tipo: </Text>
         <Text style={styles.text}>{pet.type}</Text>
@@ -55,15 +55,13 @@ const DetailsScreen = () => {
         <Text style={styles.label}>Vacinas: </Text>
         <Text style={styles.text}>{pet.vaccines || 'Não informado'}</Text>
 
-        <View style={styles.buttonContainer}>
+        <View style={styles.buttonsContainer}>
           <TouchableOpacity
             onPress={() => navigation.navigate('Add', { pet, onSave })}
             style={[styles.button, styles.editButton]}
           >
             <Text style={{color: 'black', textAlign: 'center'}}>Editar</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={async () => {
               await removePet(pet);
@@ -74,7 +72,7 @@ const DetailsScreen = () => {
             <Text style={{color: 'white', textAlign: 'center'}}>Remover</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -90,9 +88,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    height: '50%',
+    paddingTop: 50,
+    height: '40%',
   },
-  buttonContainer: {
+  buttonsContainer: {
+    gap: 20,
     padding: 20,
   },
   button: {

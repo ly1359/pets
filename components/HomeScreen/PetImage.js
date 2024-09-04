@@ -43,11 +43,9 @@ const PetImage = ({ item, size = DEFAULT_SIZE }) => {
   const svg = avatar(typeToSeed[item.type], { size });
 
   return (
-    <View style={[styles.imageContainer, { width, height }]}>
-      <Text>
-        <SvgXml xml={svg} width={size} height={size} />
-      </Text>
-    </View>
+    <Text>
+      <SvgXml xml={svg} width={size} height={size} />
+    </Text>
   );
 };
 

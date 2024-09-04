@@ -13,8 +13,11 @@ export const getPetIdByName = async (name) => {
 };
 
 export const setupDatabase = async () => {
+  const pragmaStatement = await (await db).prepareAsync(`PRAGMA journal_mode = WAL;`);
+  await pragmaStatement.executeAsync();
+  await pragmaStatement.finalizeAsync();
+
   const statement = await (await db).prepareAsync(`
-    PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS pets (
       id INTEGER PRIMARY KEY AUTOINCREMENT, 
       name TEXT, 
@@ -46,12 +49,12 @@ export const setupDatabase = async () => {
 
   if (rows.length === 0) {
     const insertStatement = await (await db).prepareAsync (`
-      INSERT INTO pets (name, type, otherType, bDate, vaccines, image) 
+      INSERT INTO pets (name, type, otherType, bDate, image) 
       VALUES (?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?);
     `);
     await insertStatement.executeAsync([
-      'Pokan', 'Gato', '', '2020-01-01', 'Não informado', 'https://via.placeholder.com/100',
-      'Mada', 'Cachorro', '', '2019-05-05', 'Não informado', 'https://via.placeholder.com/100'
+      'Pokan', 'Gato', '', '2020-01-01', 'https://via.placeholder.com/100',
+      'Mada', 'Cachorro', '', '2019-05-05', 'https://via.placeholder.com/100'
     ]);
 
     await insertStatement.finalizeAsync();
