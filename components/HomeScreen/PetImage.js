@@ -27,11 +27,13 @@ const PetImage = ({ item, size = DEFAULT_SIZE }) => {
     )
   }
 
-  if (item.type === 'Outro') {
+  const unknownType = Object.keys(typeToSeed).findIndex((v) => v === item.type) === -1;
+
+  if (unknownType) {
     return (
       <View style={[styles.imageContainer, { width, height }]}>
         <Image
-          source={'https://via.placeholder.com/100'}
+          source={{ uri: 'https://via.placeholder.com/100' }}
           style={styles.image}
         />
       </View>
