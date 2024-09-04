@@ -13,9 +13,12 @@ const typeToSeed = {
 };
 
 const PetImage = ({ item, size = DEFAULT_SIZE }) => {
+  const width = size;
+  const height = size;
+
   if (item.image) {
     return (
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { width, height }]}>
         <Image
           source={{ uri: item.image }}
           style={styles.image}
@@ -26,7 +29,7 @@ const PetImage = ({ item, size = DEFAULT_SIZE }) => {
 
   if (item.type === 'Outro') {
     return (
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { width, height }]}>
         <Image
           source={'https://via.placeholder.com/100'}
           style={styles.image}
@@ -38,7 +41,7 @@ const PetImage = ({ item, size = DEFAULT_SIZE }) => {
   const svg = avatar(typeToSeed[item.type], { size });
 
   return (
-    <View style={styles.imageContainer}>
+    <View style={[styles.imageContainer, { width, height }]}>
       <Text>
         <SvgXml xml={svg} width={size} height={size} />
       </Text>
@@ -48,11 +51,9 @@ const PetImage = ({ item, size = DEFAULT_SIZE }) => {
 
 const styles = StyleSheet.create({
   imageContainer: {
-    width: '100%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: DEFAULT_SIZE,
     marginBottom: 15,
   },
   image: {
