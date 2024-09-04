@@ -13,7 +13,7 @@ const AddPetScreen = () => {
   const [type, setType] = useState('');
   const [otherType, setOtherType] = useState('');
   const [bDate, setbDate] = useState(new Date());
-  const [vaccines, setVaccines] = useState([{ name: '', vaccineDate: new Date() }]);;
+  const [vaccines, setVaccines] = useState([{ vaccineName: '', vaccineDate: new Date() }]);;
   const [showDatePickerIndex, setShowDatePickerIndex] = useState(null);
   const [image, setImage] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
