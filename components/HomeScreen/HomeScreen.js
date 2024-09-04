@@ -56,7 +56,7 @@ const HomeScreen = () => {
             style={styles.petContainer}
           >
             <PetImage item={item} />
-          
+
             <View>
               <Text style={styles.name}>{item.name.toString()}</Text>
               <Text>Tipo: {item.type === 'Outro' ? item.otherType : item.type || 'Não informado'}</Text>
